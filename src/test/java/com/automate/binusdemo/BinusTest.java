@@ -5,11 +5,16 @@ import org.junit.jupiter.api.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 
@@ -22,13 +27,14 @@ public class BinusTest {
 
     @BeforeEach
     public void setUp() {
-        WebDriverManager.firefoxdriver().setup();
+        WebDriverManager.firefoxdriver().clearDriverCache().setup();
         FirefoxOptions options = new FirefoxOptions();
+
         driver = new FirefoxDriver(options);
         driver.manage().window().maximize();
         wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-        login(); // every test starts from a logged-in state
+        login();
     }
 
     private void login() {
@@ -126,8 +132,17 @@ public class BinusTest {
                 "Expected button text 'save a copy' but found: '" + buttonText + "'");
     }
 
+    @Test
+
     @AfterEach
     public void tearDown() {
-        if (driver != null) driver.quit();
+        if (driver != null) {
+            try {
+                driver.quit();
+            } catch (Exception e) {
+                System.err.println("Error during driver quit: " + e.getMessage());
+            }
+            driver = null;
+        }
     }
 }
