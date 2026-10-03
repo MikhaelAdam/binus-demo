@@ -27,9 +27,13 @@ public class BinusTest {
     private WebDriver driver;
     private WebDriverWait wait;
 
+    @BeforeAll
+    public static void setUpAll(){
+        WebDriverManager.firefoxdriver().clearDriverCache().setup();
+    }
+
     @BeforeEach
     public void setUp() {
-        WebDriverManager.firefoxdriver().clearDriverCache().setup();
         FirefoxOptions options = new FirefoxOptions();
 
         driver = new FirefoxDriver(options);
