@@ -16,7 +16,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -92,7 +94,7 @@ public class BinusTest {
         }
 
         // Handle clicking the "Retry" button if exist here
-        List<WebElement> allButtons = driver.findElements(By.tagName("button"));
+        List<WebElement> allButtons = driver.findElements(By.cssSelector("button.C--button.type--1.font-size-13px.-theme-primary.mt-2.ml-3"));
         for (WebElement button : allButtons) {
             if (button.getText().trim().equalsIgnoreCase("retry")) {
                 if (button.isDisplayed()) {
@@ -133,6 +135,30 @@ public class BinusTest {
     }
 
     @Test
+    public void openScheduleToday() throws InterruptedException {
+        LocalDateTime now = LocalDateTime.now();
+        String year = String.valueOf(now.getYear());
+        String month = String.format("%02d", now.getMonthValue()); // zero-pads e.g. 3 -> "03"
+
+        String scheduleUrl = "https://lms.binus.ac.id/lms/schedule/" + year + "-" + month;
+        driver.get(scheduleUrl);
+        try {
+            WebElement continueButton = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.xpath("//button[contains(@class,'MuiButton-containedPrimary') and normalize-space(.)='Continue to LMS']")
+                    )
+            );
+            continueButton.click();
+        } catch (org.openqa.selenium.TimeoutException e) {
+            // Button didn't appear — assume we landed directly, continue normally
+        }
+        // Wait for something on the schedule page to confirm it actually loaded
+        wait.until(ExpectedConditions.urlContains("/lms/schedule/"));
+        Thread.sleep(5000);
+
+        assertTrue(Objects.requireNonNull(driver.getCurrentUrl()).contains(scheduleUrl),
+                "Did not land on expected schedule URL. Actual: " + driver.getCurrentUrl());
+    }
 
     @AfterEach
     public void tearDown() {
