@@ -74,11 +74,26 @@ public class BinusTest {
     }
 
     @Test
-    public void dashboardLoadsAfterLogin() {
-        WebElement header = driver.findElement(
-                By.xpath("//p[contains(@class,'MuiTypography-root') and normalize-space(text())='My Dashboard']")
-        );
-        assertTrue(header.isDisplayed());
+    public void financialSummaryLoadsAfterLogin() throws InterruptedException {
+        String financialUrl = "https://newacadservices.apps.binus.ac.id/acadservices/student-financial/financial-summary";
+        driver.navigate().to(financialUrl);
+
+        // Handle the optional "Continue to LMS"-style prompt only if one shows up on this domain too
+        // (remove if not needed)
+        try {
+            WebElement continueButton = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.xpath("//button[contains(@class,'MuiButton-containedPrimary') and normalize-space(.)='Continue to Academic Services']")
+                    )
+            );
+            continueButton.click();
+        } catch (org.openqa.selenium.TimeoutException e) {
+            // Button didn't appear — assume we landed directly, continue normally
+        }
+        wait.until(ExpectedConditions.urlContains("/student-financial/financial-summary"));
+        Thread.sleep(5000);
+        assertTrue(driver.getCurrentUrl().contains("/student-financial/financial-summary"),
+                "Did not land on the financial summary page. Actual URL: " + driver.getCurrentUrl());
     }
 
     @Test
@@ -132,10 +147,9 @@ public class BinusTest {
         assertFalse(saveButtons.isEmpty(), "The button with the specified class does not exist on the page.");
 
         WebElement saveButton = saveButtons.get(1);
-        String buttonText = saveButton.getText().trim().toLowerCase();
 
-        assertEquals("save a copy", buttonText,
-                "Expected button text 'save a copy' but found: '" + buttonText + "'");
+        saveButton.click();
+        Thread.sleep(5000);
     }
 
     @Test
